@@ -1,17 +1,60 @@
 import express from 'express'
 import 'dotenv/config'
+import bodyParser from 'body-parser'
+import fileUpload from 'express-fileupload'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
+import { v2 as cloudinary } from 'cloudinary';
+import { dbConection } from './db/dbConnection.js'
+import { userRouter } from './routers/user.router.js'
+
+const app = express()
 
 
-const server = express()
+app.use(bodyParser.json({limit:"50mb"}))
+app.use(express.json({ limit: '50mb' }))
 
+// Increase the request size limit for URL-encoded data
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
+app.use(fileUpload(
+    {
+     limits: { fileSize: 50 * 1024 * 1024 }, // 100 MB (adjust this as needed)
+    }
+))
 
-server.get('/' , (req , res)=>{
-     console.info('server is properly running')
-     res.send("server is running")
+app.use(cookieParser())
+
+// frontend connection by cors 
+app.use(cors({
+    origin: `${process.env.FRONTEND_URL}` || '*',
+    exposedHeaders: ['X-Total-Count'],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+}
+))
+
+// cloude configration
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_DB,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET
 })
 
-server.listen(process.env.PORT || 8000 , ()=>{
+// connect database
+ dbConection();
+
+//  routing setup
+app.use( '/user', userRouter)
+
+
+
+app.get('/' , ( req , res)=>{
+       res.send("this is my ctms project ... ")
+});
+
+
+app.listen(process.env.PORT || 8000 , ()=>{
     console.log("server is running ");
     console.info(`port :- http://localhost:${process.env.PORT}`)
 })
