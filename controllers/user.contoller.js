@@ -2,26 +2,33 @@
 import bcrypt from 'bcrypt'
 import { sendCookic } from "../utils/sendCookic.js";
 import { sendEmail } from "../utils/sendMail.js";
-import { v2 as cloudinary } from 'cloudinary';
 import { genarate6DigitOtp } from "../utils/OtpGenarate.js";
 import { timeExpire } from "../utils/timeExpire.js";
 import { Users } from '../models/user.model.js';
+import { fileDestroy, fileUploader } from '../utils/fileUpload.js';
 
 
-export const createUser = async(req, res) => {
+export const createUser = async (req, res) => {
 
     try {
-        const { name, password, email , role } = req.body
+        const { name, password, email, role } = req.body
         console.log(req.body);
-        
-        let user = await Users.findOne({ email })
-        console.log("user=>",user);
-        if (user){
-            console.log("user exist");
-         return res.status(400).json({ message: "email alrady exist" })
+
+        if (!name || !password || !email) {
+            return res.status(400).json({
+                message: "something error , please try again !",
+                success: false
+            })
         }
 
-       
+        let user = await Users.findOne({ email })
+        console.log("user=>", user);
+        if (user) {
+            console.info("user exist");
+            return res.status(400).json({ message: "email alrady exist" , success:false})
+        }
+
+
         // const profilePic = await cloudinary.uploader.upload(dp , {
         //     folder:"ecomUser"
         // })
@@ -30,9 +37,9 @@ export const createUser = async(req, res) => {
         //     image_id:profilePic.public_id,
         // }
 
-        user = await Users.create({ name, email, password , role })
+        user = await Users.create({ name, email, password, role })
         sendCookic(user, res, "user created", 200)
-        sendEmail(user.email, `wellcome ${user.name}`, "wellcome to our sabji bazar , harry up! showping now for your famaily health")
+        sendEmail(user.email, `wellcome ${user.name}`, "Thank you for choosing <strong>Vraman Sathi Pvt. Ltd.</strong> as your transportation management platform. We're dedicated to providing you with the best centralized transportation solutions to make your journey smooth and efficient.")
 
     } catch (error) {
         res.status(400).json({
@@ -44,210 +51,354 @@ export const createUser = async(req, res) => {
     }
 }
 
+
+export const sendOtpForVerifyAccount = async (req, res) => {
+    try {
+        // Authenticate user and retrieve email
+        const { id } = req.user;
+        const { email } = req.body 
+        const user = await Users.findById(id);
+
+        if (!user) {
+            return res.status(400).json({
+                message: "User not authenticated!",
+                success: false,
+            });
+        }
+
+        // Generate OTP
+        const otp = genarate6DigitOtp();
+        const otpExpiry = Date.now() + 10 * 60 * 1000; // Set OTP expiry for 10 minutes
+
+        // Send OTP email
+        await sendEmail(email, "Verify Account - OTP", otp);
+
+        // Save OTP and expiry in user record
+        user.otp = otp;
+        user.otpExpiary = otpExpiry;
+        await user.save();
+
+        return res.status(200).json({
+            message: "OTP sent successfully to verify your account.",
+            success: true,
+        });
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        return res.status(500).json({
+            message: "Something went wrong, please try again!",
+            success: false,
+        });
+    }
+};
+
+
+
+export const VerifyOtpWithExpiry = async(req , res)=>{
+    try {
+       
+        const { otp } = req.body 
+
+        let user = await Users.findOne({otp: otp , otpExpiary:{$gt:Date.now()}})
+
+        user.otp = null
+        user.otpExpiary = null 
+
+        if(!user){
+            await user.save()
+            return res.status(400).json({message:'Invalid OTP ! , please verify request again'})
+        } else{
+            user.isVerify = true
+        }
+      
+        await user.save()
+    
+        return res.status(200).json({
+            message:"otp verify successfully",
+            success:true
+        })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message:"something error , please try again !",
+            success:false
+        })
+    }
+}
+
+
+
 export const getUser = async (req, res) => {
     try {
-      const { id } = req.user;
-      const user = await Users.findById({ _id: id });
-      res.status(200).json({
-        message: "user fetched",
-        user,
-      });
+        const { id } = req.user;
+        const user = await Users.findById({ _id: id });
+        res.status(200).json({
+            message: "user fetched",
+            user,
+        });
     } catch (error) {
-      res.status(400).json({
-        message: "somthing error",
-        error,
-      });
+        res.status(400).json({
+            message: "somthing error",
+            error,
+        });
     }
-  };
+};
 
-export const logInUser = async(req , res)=>{
-   
+
+export const changeProfilePic = async(req , res)=>{
     try {
-        const {email , password} = req.body;
+        // file path 
+        const { file } = req.body
+        const { id } = req.user 
+
+        // file check 
+        if(!file){
+            return res.status(400).json({
+                message:"file is required !" ,
+                success:false
+            })
+        }
+
+        // user fetching 
+        let user = await Users.findById(id)
+
+        if(!user){
+            return res.status(400).json({message:'user not authenticate !'})
+        }
+
+        // delete previous file 
+        const file_id = user.profile_pic?.public_id
+        const isDistroy = await fileDestroy(file_id)
+
+        if(!isDistroy && file_id){
+            return res.status(400).json({
+                message:"previous file not deleted ! , please try again ",
+                success:false
+            })
+        }
+
+        // new file upload 
+        const { url , public_id , error } = await fileUploader(file)
+
+        if(error){
+            return res.status(400).json({
+                message:"file not upload !" ,
+                success:false
+            })
+        }
+
+        user.profile_pic.url = url 
+        user.profile_pic.public_id = public_id
+
+        await user.save()
+
+        return res.status(200).json({
+            message:"profile pic update success !",
+            success:true ,
+            data:user
+        })
+
+    } catch (error) {
+        res.status(400).json({
+            message: "somthing error",
+            error,
+        });
+    }
+} 
+
+
+export const logInUser = async (req, res) => {
+
+    try {
+        const { email, password } = req.body;
         const user = await Users.findOne({
             email
         })
         .select('+password')
 
-        if(!user) return res.status(400).json({
-            message:"email or password not match"
+        if (!user) return res.status(400).json({
+            message: "email or password not match"
         })
         console.log(user);
         console.log(password);
-        const isMatch =await bcrypt.compare(password , user.password)
+        const isMatch = await user.comparePassword(password)
         console.log(isMatch);
 
-        if(!isMatch) return res.status(400).json({
-            message:"email or password not match"
+        if (!isMatch) return res.status(400).json({
+            message: "email or password not match"
         })
-        sendCookic(user , res , " login successfull" , 200)
+        sendCookic(user, res, " login successfull", 200)
 
     } catch (error) {
         res.status(400).json({
-            message:"somthing error",
+            message: "somthing error",
             error
         })
     }
 }
 
 export const logOutUser = (req, res) => {
-  try {
-      res
-          .status(200)
-        //   .cookie("token", "" , {
-        //       expires: new Date(Date.now()),
-        //       httpOnly: true,
-        //   })
-          .json({
-              success: true,
-              message: "Logout successfull",
-          });
+    try {
+        res
+            .status(200)
+            //   .cookie("token", "" , {
+            //       expires: new Date(Date.now()),
+            //       httpOnly: true,
+            //   })
+            .json({
+                success: true,
+                message: "Logout successfull",
+            });
 
-  } catch (error) {
-    res.json({
-      success: false,
-      message: error,
-    });
-  }
+    } catch (error) {
+        res.json({
+            success: false,
+            message: error,
+        });
+    }
 }
 
-export const deleteUser = async(req,res)=>{
+export const deleteUser = async (req, res) => {
     try {
-        const {id} = req.params
-        await Users.findByIdAndDelete({id})
+        const { id } = req.params
+        await Users.findByIdAndDelete({ id })
 
         res
-          .status(200)
-          .cookie("token", "" , {
-              expires: new Date(Date.now()),
-              httpOnly: true,
-          })
-          .json({
-              success: true,
-              message: "user deleted",
-          });
-        
+            .status(200)
+            .cookie("token", "", {
+                expires: new Date(Date.now()),
+                httpOnly: true,
+            })
+            .json({
+                success: true,
+                message: "user deleted",
+            });
+
     } catch (error) {
         res.status(400).json({
-            message:'user not delete',
-            success:false,
+            message: 'user not delete',
+            success: false,
             error
         })
     }
 }
 
-export const updateUser = async(req,res)=>{
+export const updateUser = async (req, res) => {
     try {
-        const {id} = req.params
-        const user = Users.findByIdAndUpdate({id} , req.body , {new:true})
+        const { id } = req.params
+        const user = Users.findByIdAndUpdate({ id }, req.body, { new: true })
         res.status(200).json({
-            message:"update user",
-            success:true,
+            message: "update user",
+            success: true,
             user
         })
     } catch (error) {
         res.status(400).json({
-            message:'user not update',
-            success:false,
+            message: 'user not update',
+            success: false,
             error
         })
-        
+
     }
 }
 
-export const forgotPassword = async(req , res)=>{
-    const {email} = req.body
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body
     console.log(req.body);
     try {
-        let user = await Users.findOne({email})
+        let user = await Users.findOne({ email })
         console.log(user);
-        if(!user) return res.status(400).json({
-            success:false,
-            message:'user not found'
+        if (!user) return res.status(400).json({
+            success: false,
+            message: 'user not found'
         });
         const otp = genarate6DigitOtp()
         console.log(otp);
-        sendEmail(email , 'OTP for forgot password' , `this is your Otp ${otp} , not shear anywhere`)
-     
-        user.otp = otp ;
-        user.expireAt = Date.now() + 5 * 60 * 1000 ; 
-        await user.save({ validateBeforeSave : false})
+        sendEmail(email, 'OTP for forgot password', `this is your Otp ${otp} , not shear anywhere`)
+
+        user.otp = otp;
+        user.expireAt = Date.now() + 5 * 60 * 1000;
+        await user.save({ validateBeforeSave: false })
 
         res.status(200).json({
-            user ,
-            message:'otp send successfully'
+            user,
+            message: 'otp send successfully'
         })
-        
+
     } catch (error) {
         console.log(error);
         res.status(400).json({
-            
-            message:"somthing error"
+
+            message: "somthing error"
         })
     }
 }
 
-export const changePassWithOtp = async(req , res)=>{
-    try {
-        const { otp , password } = req.body 
 
-        console.log(req.body , typeof(otp));
-        const user = await Users.findOne({otp}).select('+password')
+
+
+export const changePassWithOtp = async (req, res) => {
+    try {
+        const { otp, password } = req.body
+
+        console.log(req.body, typeof (otp));
+        const user = await Users.findOne({ otp }).select('+password')
         // console.log(user);
         const isOtpExpire = timeExpire(user.expireAt);
-        if(isOtpExpire) {
+        if (isOtpExpire) {
             user.otp = null;
-            user.expireAt = null;
-            await user.save({ validateBeforeSave: false})
+            user.otpExpiary = null;
+            await user.save({ validateBeforeSave: false })
             return res.status(400).json({
-                message:"otp is expired"
+                message: "otp is expired"
             })
         }
 
 
         console.log(user);
-        if(!user) return res.status(400).json({
-            message:'otp not corrct'
+        if (!user) return res.status(400).json({
+            message: 'otp not corrct'
         });
 
         user.password = password;
-        user.otp= null
-        await user.save({ validateBeforeSave: false})
-        
+        user.otp = null
+        await user.save({ validateBeforeSave: false })
+
         res.status(200).json({
             user,
-            message:'password changed'
+            message: 'password changed'
         })
     } catch (error) {
         res.status(400).json({
-            message:"error"
+            message: "error"
         })
     }
-} 
+}
 
-export const ChangePasswordWithOldPassword = async(req , res)=>{
-     
-    const {id} = req.user
-    const { oldPassword , newPassword } = req.body
-    console.log("log password" , oldPassword);
+
+
+export const ChangePasswordWithOldPassword = async (req, res) => {
+
+    const { id } = req.user
+    const { oldPassword, newPassword } = req.body
+    console.log("log password", oldPassword);
     try {
         const user = await Users.findById(id).select("+password")
-        const isMatch =await user.comparePassword(oldPassword)
-       
-        if(!isMatch) return res.status(400).json({
-            message:" password not match"
+        const isMatch = await user.comparePassword(oldPassword)
+
+        if (!isMatch) return res.status(400).json({
+            message: " password not match"
         })
 
         user.password = newPassword;
-        await user.save({validateBeforeSave: false})
-        
+        await user.save({ validateBeforeSave: false })
+
         // res.status(200).json({ success:true , message:"password change successfully", user })
         sendCookic(user, res, " password chang successfully", 200)
 
     } catch (error) {
         console.log(error);
-        res.status(400).json({ success:false , message:"password not change", error })
-        
+        res.status(400).json({ success: false, message: "password not change", error })
+
     }
 
 }
