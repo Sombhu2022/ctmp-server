@@ -45,7 +45,7 @@ cloudinary.config({
  dbConection();
 
 //  routing setup
-app.use( '/user', userRouter)
+app.use( '/api/v1/user', userRouter)
 
 
 
