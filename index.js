@@ -7,6 +7,8 @@ import cors from 'cors'
 import { v2 as cloudinary } from 'cloudinary';
 import { dbConection } from './db/dbConnection.js'
 import { userRouter } from './routers/user.router.js'
+import { driverRouter } from './routers/driver.router.js'
+
 
 const app = express()
 
@@ -46,6 +48,7 @@ cloudinary.config({
 
 //  routing setup
 app.use( '/api/v1/user', userRouter)
+app.use('/api/v1/driver' , driverRouter)
 
 
 

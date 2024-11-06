@@ -51,6 +51,10 @@ const userSchema = new Schema({
     isVerify: {
         type: Boolean,
         default: false
+    },
+    isProfileComplete : {
+        type:Boolean,
+        default:false
     }
 
 }, { timestamps: true })
@@ -75,4 +79,4 @@ userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password , this.password)
 }
 
-export const Users = model('User', userSchema)
+export const Users = model('user', userSchema)

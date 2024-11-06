@@ -1,19 +1,10 @@
 import mongoose, { model, Schema } from "mongoose";
 
 
-const typeOfCarModel= new Schema({
-    name:{
-        type:String
-    },
-    exprence:{
-        type:Number
-    }
-}, {_id: false} ) 
-
 export const driverSchema = new Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId ,
-        ref:'User',
+        ref:'user',
         required:true
     },
     address:{
@@ -24,7 +15,20 @@ export const driverSchema = new Schema({
         type:Number,
         maxLength:10
     },
-    typeOfCar:[ typeOfCarModel ],
+    typeOfCar:[
+       {
+        name:{
+            type:String , 
+            maxLength: [60, 'name should be in 60 latter'],
+            required: [true, 'name is reqired!'],
+            trim: true
+        },
+        exprence:{
+           type:Number , 
+           default:0
+        }
+       }
+    ],
     isOwnCar: {
         type:Boolean,
         default:false
@@ -32,7 +36,12 @@ export const driverSchema = new Schema({
     totalExprence:{
         type:Number 
     },
+    car:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'car' ,
+        default:null
+    }
 
 } , { timestamps: true})
 
-export const Drivers = model('Driver' , driverSchema)
+export const Drivers = model('driver' , driverSchema)

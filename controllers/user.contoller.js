@@ -1,6 +1,6 @@
 
 import bcrypt from 'bcrypt'
-import { sendCookic } from "../utils/sendCookic.js";
+import { sendCookie } from "../utils/sendCookie.js";
 import { sendEmail } from "../utils/sendMail.js";
 import { genarate6DigitOtp } from "../utils/OtpGenarate.js";
 import { timeExpire } from "../utils/timeExpire.js";
@@ -38,7 +38,7 @@ export const createUser = async (req, res) => {
         // }
 
         user = await Users.create({ name, email, password, role })
-        sendCookic(user, res, "user created", 200)
+        sendCookie(user, res, "user created", 200)
         sendEmail(user.email, `wellcome ${user.name}`, "Thank you for choosing <strong>Vraman Sathi Pvt. Ltd.</strong> as your transportation management platform. We're dedicated to providing you with the best centralized transportation solutions to make your journey smooth and efficient.")
 
     } catch (error) {
@@ -226,7 +226,7 @@ export const logInUser = async (req, res) => {
         if (!isMatch) return res.status(400).json({
             message: "email or password not match"
         })
-        sendCookic(user, res, " login successfull", 200)
+        sendCookie(user, res, " login successfull", 200)
 
     } catch (error) {
         res.status(400).json({
@@ -393,7 +393,7 @@ export const ChangePasswordWithOldPassword = async (req, res) => {
         await user.save({ validateBeforeSave: false })
 
         // res.status(200).json({ success:true , message:"password change successfully", user })
-        sendCookic(user, res, " password chang successfully", 200)
+        sendCookie(user, res, " password chang successfully", 200)
 
     } catch (error) {
         console.log(error);
