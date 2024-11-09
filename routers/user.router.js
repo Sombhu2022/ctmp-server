@@ -15,8 +15,8 @@ router
    .post('/login' , logInUser )
    .get('/logout' ,isAuthenticate, logOutUser)
 
-   .post('/sendOtp' , isAuthenticate ,  sendOtpForVerifyAccount)
-   .post('/verifyOtp', isAuthenticate , VerifyOtpWithExpiry)
+   .post('/send-otp' , isAuthenticate ,  sendOtpForVerifyAccount)
+   .post('/verify-otp', isAuthenticate , VerifyOtpWithExpiry)
 
    .post('/forgotRequest' , forgotPassword)
    .post('/forgotPass',changePassWithOtp )

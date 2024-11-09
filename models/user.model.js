@@ -39,8 +39,8 @@ const userSchema = new Schema({
     ,
     role: {
         type: String,
-        enum: ['user', 'admin', 'driver', 'owner'],
-        default: 'user'
+        enum: ['customer', 'admin', 'driver', 'owner'],
+        default: 'customer'
     },
     otp: {
         type: Number

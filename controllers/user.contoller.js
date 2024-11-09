@@ -20,30 +20,29 @@ export const createUser = async (req, res) => {
                 success: false
             })
         }
-
-        let user = await Users.findOne({ email })
-        console.log("user=>", user);
-        if (user) {
-            console.info("user exist");
-            return res.status(400).json({ message: "email alrady exist" , success:false})
+        if(password.length < 8){
+            return res.status(400).json({
+                message: "Password must be 8 character or more !",
+                success: false
+            })
         }
 
-
-        // const profilePic = await cloudinary.uploader.upload(dp , {
-        //     folder:"ecomUser"
-        // })
-        // const image = {
-        //     url:profilePic.secure_url,
-        //     image_id:profilePic.public_id,
-        // }
+        let user = await Users.findOne({ email })
+        // console.log("user=>", user);
+        if (user) {
+            console.info("user exist");
+            return res.status(400).json({ message: "email alrady exist" , success:false })
+        }
 
         user = await Users.create({ name, email, password, role })
-        sendCookie(user, res, "user created", 200)
+        sendCookie(user, res, "user created successfull", 200)
         sendEmail(user.email, `wellcome ${user.name}`, "Thank you for choosing <strong>Vraman Sathi Pvt. Ltd.</strong> as your transportation management platform. We're dedicated to providing you with the best centralized transportation solutions to make your journey smooth and efficient.")
 
     } catch (error) {
-        res.status(400).json({
-            message: "user not create",
+        console.log(error);
+        
+        return res.status(400).json({
+            message: "somthing error , please try again !",
             success: false,
             error
         })
@@ -68,7 +67,7 @@ export const sendOtpForVerifyAccount = async (req, res) => {
 
         // Generate OTP
         const otp = genarate6DigitOtp();
-        const otpExpiry = Date.now() + 10 * 60 * 1000; // Set OTP expiry for 10 minutes
+        const otpExpiry = Date.now() + 5 * 60 * 1000; // Set OTP expiry for 10 minutes
 
         // Send OTP email
         await sendEmail(email, "Verify Account - OTP", otp);
@@ -114,7 +113,8 @@ export const VerifyOtpWithExpiry = async(req , res)=>{
     
         return res.status(200).json({
             message:"otp verify successfully",
-            success:true
+            success:true ,
+            user
         })
     } catch (error) {
         console.error(error)
@@ -133,7 +133,7 @@ export const getUser = async (req, res) => {
         const user = await Users.findById({ _id: id });
         res.status(200).json({
             message: "user fetched",
-            user,
+            data:user,
         });
     } catch (error) {
         res.status(400).json({
@@ -230,7 +230,7 @@ export const logInUser = async (req, res) => {
 
     } catch (error) {
         res.status(400).json({
-            message: "somthing error",
+            message: "somthing error , please try again !",
             error
         })
     }
@@ -240,10 +240,10 @@ export const logOutUser = (req, res) => {
     try {
         res
             .status(200)
-            //   .cookie("token", "" , {
-            //       expires: new Date(Date.now()),
-            //       httpOnly: true,
-            //   })
+            .cookie("token", "" , {
+                  expires: new Date(Date.now()),
+                  httpOnly: true,
+            })
             .json({
                 success: true,
                 message: "Logout successfull",
