@@ -4,21 +4,23 @@ import { Users } from "../models/user.model.js";
 
 export const isAuthenticate = async (req, res , next) => {
     try {
-        const token = req.headers.token;
+        const token = req.cookies.token || req.headers.token;
+        // console.log( ' token' , token);
+        
         if (!token) {
             return res.status(400).json({
                 success: false,
-                message: "login first",
+                message: "user not authenticated , please login first !",
             });
         } else {
             const decode = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = await Users.findById(decode._id, "-password");
-            console.log("not error");
+            req.user = await Users.findById( decode._id , "-password");
+            console.error("not error");
             next();
         }
 
     } catch (error) {
-        res.status(400).json({
+       return  res.status(400).json({
             message: "user not authenticate",
             error
         });

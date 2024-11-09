@@ -40,7 +40,12 @@ export const driverSchema = new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'car' ,
         default:null
-    }
+    },
+    isBooked:{
+        type:Boolean ,
+        default:false
+    },
+    
 
 } , { timestamps: true})
 
