@@ -5,7 +5,8 @@ export const driverSchema = new Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId ,
         ref:'user',
-        required:true
+        required:true ,
+        unique: [true , 'driver alrady exist !']
     },
     address:{
         type:String,
@@ -20,7 +21,6 @@ export const driverSchema = new Schema({
         name:{
             type:String , 
             maxLength: [60, 'name should be in 60 latter'],
-            required: [true, 'name is reqired!'],
             trim: true
         },
         exprence:{
@@ -33,7 +33,7 @@ export const driverSchema = new Schema({
         type:Boolean,
         default:false
     },
-    totalExprence:{
+    totalExprience:{
         type:Number 
     },
     car:{

@@ -6,10 +6,10 @@ export const createDriverProfile = async (req, res) => {
     try {
         const { id } = req.user;
         // const id = "672b8165e74e9367fdd69cd6"
-        const { address, typeOfCar, phone, isOwnCar, totalExprence, car } = req.body;
-
+        const { address, typeOfCar, phone, isOwnCar, totalExprience, car } = req.body;
+         console.info(req.body)
         // Validate required fields
-        if (!address || !typeOfCar || !phone || !totalExprence) {
+        if (!address || !phone ) {
             return res.status(400).json({
                 message: "All fields are required!",
                 success: false
@@ -22,7 +22,7 @@ export const createDriverProfile = async (req, res) => {
             address,
             isOwnCar,
             typeOfCar,
-            totalExprence,
+            totalExprience,
             userId: id,
             ...(isOwnCar && { car }) 
         };
@@ -38,7 +38,7 @@ export const createDriverProfile = async (req, res) => {
         return res.status(200).json({
             message: "Driver profile created successfully!",
             success: true,
-            data: driver
+            driver
         });
 
     } catch (error) {
