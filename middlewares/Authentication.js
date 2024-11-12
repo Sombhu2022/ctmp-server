@@ -15,7 +15,7 @@ export const isAuthenticate = async (req, res , next) => {
         } else {
             const decode = jwt.verify(token, process.env.JWT_SECRET);
             req.user = await Users.findById( decode._id , "-password");
-            console.error("not error");
+            // console.info("not error");
             next();
         }
 

@@ -1,14 +1,24 @@
 import { model, Schema } from "mongoose";
 
 
-const carSchema =new Schema({
-    
+const vehicleSchema = new Schema({
+
     name: {
         type: String,
         maxLength: [60, 'name should be in 60 latter'],
         required: [true, 'name is reqired!'],
         trim: true
     },
+
+    modelNumber: {
+        type: String,
+        maxLength: 30,
+        required: true,
+        default: null,
+        trim: true,
+        unique: true
+    },
+
     image: {
         url: {
             type: String,
@@ -19,27 +29,27 @@ const carSchema =new Schema({
             default: null
         }
     },
-    brand :{
+    brand: {
         type: String,
         maxLength: [60, 'name should be in 60 latter'],
         trim: true
-    } ,
-
-    userId:{
-        type: mongoose.Schema.Types.ObjectId ,
-        ref:'user',
-        required:true
     },
-    area:[{
-        name:{
-           type:String
-        }
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        required: true
+    },
+    area: [{
+
+        type: String
+
     }],
-    rate:{
-       type:Number,
-       default:0
+    rate: {
+        type: Number,
+        default: 0
     }
 
-   } , {timestamps:true})
+}, { timestamps: true })
 
-export const Cars = model('car' , carSchema)
+export const Vehicles = model('vehicle', vehicleSchema)
