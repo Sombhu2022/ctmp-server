@@ -8,6 +8,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { dbConection } from './db/dbConnection.js'
 import { userRouter } from './routers/user.router.js'
 import { driverRouter } from './routers/driver.router.js'
+import { vehicleRouter } from './routers/vehicle.router.js'
 
 
 const app = express()
@@ -49,7 +50,7 @@ cloudinary.config({
 //  routing setup
 app.use( '/api/v1/user', userRouter)
 app.use('/api/v1/driver' , driverRouter)
-
+app.use('/api/v1/vehicle' , vehicleRouter)
 
 
 app.get('/' , ( req , res)=>{

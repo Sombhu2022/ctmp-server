@@ -33,15 +33,6 @@ const ownerSchema = new mongoose.Schema({
         vehicle:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'vechile',  
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1,
-        } ,
-        available:{
-            type: Number,
-            required: true,
         }
     }
     ],

@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import mongoose , { model, Schema } from "mongoose";
 
 
 const vehicleSchema = new Schema({
@@ -9,7 +9,11 @@ const vehicleSchema = new Schema({
         required: [true, 'name is reqired!'],
         trim: true
     },
-
+    vehicleType: {
+        type: String,
+        enum: ['car', 'bike', 'bus', 'truck', 'van', 'scooter', 'tractor', 'auto-rickshaw', 'jeep', 'cycle', 'pickup', 'ambulance', 'fire-truck', 'minivan', 'motorcycle', 'trailer', 'rickshaw'],
+        default: 'car',
+      },      
     modelNumber: {
         type: String,
         maxLength: 30,
@@ -41,13 +45,15 @@ const vehicleSchema = new Schema({
         required: true
     },
     area: [{
-
         type: String
-
     }],
     rate: {
         type: Number,
         default: 0
+    },
+    available: {
+        type: Number,
+        default : true
     }
 
 }, { timestamps: true })

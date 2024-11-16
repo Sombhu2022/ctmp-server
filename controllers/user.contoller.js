@@ -31,7 +31,7 @@ export const createUser = async (req, res) => {
         // console.log("user=>", user);
         if (user) {
             console.info("user exist");
-            return res.status(400).json({ message: "email alrady exist" , success:false })
+            return res.status(400).json({ message: "email alrady exist , please try with another email !" , success:false })
         }
 
         user = await Users.create({ name, email, password, role })

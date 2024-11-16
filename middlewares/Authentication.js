@@ -29,9 +29,9 @@ export const isAuthenticate = async (req, res , next) => {
 
 export const isAdmin =(req , res , next)=>{
 
-        const {roal} = req.user
-        console.log(roal);
-        if(roal === 'admin'){
+        const {role} = req.user
+        console.log(role);
+        if(role === 'admin'){
             console.log("admin ok");
             next();
         }
@@ -39,6 +39,23 @@ export const isAdmin =(req , res , next)=>{
             console.log("admin not");
             res.status(400).json({
                 message:"only admin can be chenge this section",
+            })
+        }
+     
+}
+
+export const isOwnerOrDriver =(req , res , next)=>{
+
+        const {role} = req.user
+        console.log(role);
+        if(role === 'owner'||role === 'driver' ){
+            console.log("owmer or driver");
+            next();
+        }
+        else{
+            console.log("admin not");
+            res.status(400).json({
+                message:"only owner or driver can be chenge this section",
             })
         }
      
