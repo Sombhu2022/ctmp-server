@@ -1,16 +1,25 @@
 import fileUpload from "express-fileupload"
-import { Cars } from "../models/car.model"
+import { Vehicles } from "../models/vehicle.model.js"
 
 
-export const createACar =  async(req , res)=>{
+
+export const createNewVehicle =  async(req , res)=>{
     try {
         const { id } = req.user 
-        const { name , image , brand , area , rate } = req.body 
+        const { name , modelNumber , image , brand , area , rate } = req.body 
         // filde check 
-        if(!name || !brand || !area || !rate){
+        if(!name || !brand || !area || !rate || !modelNumber){
             return res.status(400).json({
                 message:"all filde  required !",
                 success:false
+            })
+        }
+
+        let vehicle = await Vehicles.findOne({ modelNumber })
+
+        if(vehicle) {
+            return res.status(400).json({ 
+                message : "Vehicle alrady exist !"
             })
         }
    
@@ -34,19 +43,20 @@ export const createACar =  async(req , res)=>{
 
         }
 
-        const car = await Cars.create({
+        vehicle = await Vehicles.create({
             name , 
             image:tempImage,
             brand,
             area ,
             rate,
-            userId:id
+            userId:id ,
+            modelNumber 
         })
 
         return res.status(200).json({
             message:"new car is added successfully",
             success:true,
-            data:car
+            data:vehicle
         })
 
     } catch (error) {
