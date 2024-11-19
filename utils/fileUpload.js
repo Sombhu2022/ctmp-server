@@ -23,16 +23,17 @@ export const fileDestroy = async( public_id )=>{
        
       const data = await cloudinary.uploader.destroy(public_id)
       // console.log(data);
-      return true
+      return { success : true , data, error : null }
   
     } catch (error) {
       console.error(error);
       
-      return false
+      return { success : false , data:null ,  error}
     }
 
   }
-  return false
+
+  return { success : true , error: null , data:null}
 
 }
 

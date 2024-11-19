@@ -1,5 +1,6 @@
-import fileUpload from "express-fileupload"
+
 import { Vehicles } from "../models/vehicle.model.js"
+import { fileDestroy, fileUploader } from "../utils/fileUpload.js"
 
 
 
@@ -8,6 +9,7 @@ export const createNewVehicle =  async(req , res)=>{
         const { id } = req.user 
         const { name , modelNumber , image , brand , area , rate } = req.body 
         // filde check 
+        
         if(!name || !brand || !area || !rate || !modelNumber){
             return res.status(400).json({
                 message:"all filde  required !",
@@ -29,7 +31,7 @@ export const createNewVehicle =  async(req , res)=>{
         }
 
         if(image) {
-            const { url , public_id , error} = await fileUpload(image)
+            const { url , public_id , error} = await fileUploader(image)
             if(error){
                 return res.status(400).json({
                     message:"image not uploaded !"
@@ -64,5 +66,34 @@ export const createNewVehicle =  async(req , res)=>{
             message:"something error , please try again !",
             success:false
         }).status(500)
+    }
+}
+
+
+export const deleteVehicle = async(req , res )=>{
+    try {
+        const { vehicleId } = req.params
+
+         const vehicle = await Vehicles.findById(vehicleId)
+   
+         const { error , data , success } = await fileDestroy(vehicle.image.public_id)
+
+         if(!success){
+            return res.json({
+                message:'server error , file not delete !' 
+            }).status(400)
+         }
+
+        await Vehicles.findByIdAndUpdate(vehicleId)
+        
+        return res.json({
+            message:'vehicle delete success ' ,
+            success : true,
+            data:vehicle
+        }).status(200)
+
+    } catch (error) {
+        
+        return res.status(500).json({ message : 'Internal server error , please try again !' , error , success:false})
     }
 }
