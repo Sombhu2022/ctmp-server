@@ -11,7 +11,7 @@ const vehicleSchema = new Schema({
     },
     vehicleType: {
         type: String,
-        enum: ['car', 'bike', 'bus', 'truck', 'van', 'scooter', 'tractor', 'auto-rickshaw', 'jeep', 'cycle', 'pickup', 'ambulance', 'fire-truck', 'minivan', 'motorcycle', 'trailer', 'rickshaw'],
+        enum: ['car', 'bike', 'bus', 'truck', 'van', 'tractor', 'auto-rickshaw', 'jeep', 'cycle'],
         default: 'car',
       },      
     modelNumber: {
@@ -54,7 +54,12 @@ const vehicleSchema = new Schema({
     available: {
         type: Number,
         default : true
+    } ,
+    isAvilableForRant : {
+        type:Boolean ,
+        default: false
     }
+   
 
 }, { timestamps: true })
 

@@ -97,3 +97,85 @@ export const deleteVehicle = async(req , res )=>{
         return res.status(500).json({ message : 'Internal server error , please try again !' , error , success:false})
     }
 }
+
+export const fetchAllAvailableVehical = async(req , res)=>{
+
+    try {
+        const vehicle = await Vehicles.find({available: true})
+
+        if(!vehicle) {
+            return res.status(400).json({
+                message: " No car available ",
+                vehicle:[],
+                success:true
+            })
+        }
+        
+        return res.status(200).json({
+            message:"all available vehical detais find ",
+            vehicle,
+            success:true
+        })
+    } catch (error) {
+        console.error(error)
+        return res.status(500).json({
+            message:"Internal server error" ,
+            error,
+            success:false
+        })
+    }
+}
+
+
+
+export const fetchVehicleByVehicleType = async (req, res) => {
+    try {
+        const { carType } = req.body;
+
+        // Validate input
+        if (!carType) {
+            return res.status(400).json({
+                message: "carType is required",
+            });
+        }
+
+        // Check if the carType is valid based on the schema's enum
+        const validCarTypes = ['car', 'bike', 'bus', 'truck', 'van', 'tractor', 'auto-rickshaw', 'jeep', 'cycle'];
+        if (!validCarTypes.includes(carType)) {
+            return res.status(400).json({
+                message: `Invalid carType. Valid options are: ${validCarTypes.join(', ')}`,
+            });
+        }
+
+        // Query the database for vehicles of the specified type
+        const vehicles = await Vehicles.find({ vehicleType: carType });
+
+        // If no vehicles found, return a 404 response
+        if (!vehicles.length) {
+            return res.status(404).json({
+                message: `No vehicles found for the type: ${carType}`,
+            });
+        }
+
+        // Respond with the list of vehicles
+        return res.status(200).json({
+            message: "Vehicles fetched successfully",
+            data: vehicles,
+        });
+    } catch (error) {
+        console.error("Error fetching vehicles by carType:", error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            error,
+        });
+    }
+};
+
+
+export const fetchVehicleByLocation = async(req , res) =>{
+    try {
+        
+    } catch (error) {
+        
+    }
+}
