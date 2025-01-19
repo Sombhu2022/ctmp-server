@@ -1,6 +1,4 @@
-// models/Owner.js
-const { model } = require('mongoose');
-const mongoose = require('mongoose');
+import mongoose, { model } from "mongoose";
 
 const ownerSchema = new mongoose.Schema({
     user:{
@@ -12,7 +10,6 @@ const ownerSchema = new mongoose.Schema({
         email: {
             type: String,
             required: true,
-            unique: true,
             trim: true,
             lowercase: true,
             match: [/.+\@.+\..+/, 'Please fill a valid email address'],
@@ -33,8 +30,9 @@ const ownerSchema = new mongoose.Schema({
         vehicle:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'vechile',  
-        }
-    }
+        },
+      
+    },{_id : false}
     ],
     
 }, { timestamps: true });
