@@ -10,6 +10,7 @@ import { userRouter } from './routers/user.router.js'
 import { driverRouter } from './routers/driver.router.js'
 import { vehicleRouter } from './routers/vehicle.router.js'
 import { ownerRouter } from './routers/owner.router.js'
+import { orderRouter } from './routers/orderRouter.js'
 
 
 const app = express()
@@ -53,6 +54,7 @@ app.use( '/api/v1/user', userRouter)
 app.use('/api/v1/driver' , driverRouter)
 app.use('/api/v1/vehicle' , vehicleRouter)
 app.use('/api/v1/owner' , ownerRouter)
+app.use('/api/v1/booking' , orderRouter)
 
 
 app.get('/' , ( req , res)=>{
